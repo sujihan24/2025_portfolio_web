@@ -1,0 +1,2335 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한수지 - 포트폴리오</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            cursor: auto;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            line-height: 1.6;
+            color: #2c2c2c;
+            overflow-x: hidden;
+            background: #fafafa;
+            word-break: keep-all;
+            word-wrap: break-word;
+        }
+
+        /* 파티클 캔버스 배경 */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            background: transparent;
+        }
+
+        /* 히어로 섹션 파티클 */
+        #heroParticleCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* 미묘한 커서 인터랙션 효과 */
+        .cursor-trail {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: rgba(44, 44, 44, 0.15);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            transition: all 0.1s ease;
+        }
+
+        .ripple-effect {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ripple-effect::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(44, 44, 44, 0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: all 0.6s ease;
+        }
+
+        .ripple-effect.active::after {
+            width: 300px;
+            height: 300px;
+            opacity: 1;
+        }
+
+        /* 호버 가능한 요소들에 기본 포인터 커서 */
+        a, button, .portfolio-item, .skill-tag, .stat-item, .contact-item, .logo {
+            cursor: pointer;
+        }
+
+        /* 네비게이션 */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            padding: 1.2rem 0;
+            transition: all 0.3s ease;
+        }
+
+        nav.scrolled {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2c2c2c;
+            letter-spacing: -0.02em;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background: #2c2c2c;
+            transition: width 0.3s ease;
+        }
+
+        .logo:hover::after {
+            width: 100%;
+        }
+
+        .logo:hover {
+            transform: translateY(-2px);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2.5rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .nav-links a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(44, 44, 44, 0.05);
+            border-radius: 20px;
+            transform: scale(0);
+            transition: transform 0.3s ease;
+            z-index: -1;
+        }
+
+        .nav-links a:hover::before {
+            transform: scale(1);
+        }
+
+        .nav-links a:hover {
+            color: #2c2c2c;
+            transform: translateY(-2px);
+        }
+
+        /* 히어로 섹션 개선 */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #2c2c2c;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 히어로 콘텐츠 */
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 700px;
+            padding: 0 2rem;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(44,44,44,0.05);
+            color: #2c2c2c;
+            padding: 0.5rem 1.2rem;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease 2s forwards;
+            border: 1px solid rgba(44,44,44,0.1);
+        }
+
+        .hero-tags {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+            opacity: 0;
+            animation: fadeInUp 1s ease 3.2s forwards;
+        }
+
+        .hero-tag {
+            background: linear-gradient(135deg, #f8f8f8, #eeeeee);
+            color: #666;
+            padding: 0.6rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .hero-tag:hover {
+            background: #2c2c2c;
+            color: white;
+            border-color: #2c2c2c;
+            transform: translateY(-2px);
+        }
+
+        .hero-tag:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 4rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease 3.8s forwards;
+        }
+
+        .cta-button.primary {
+            background: #2c2c2c;
+            color: white;
+            border: 2px solid #2c2c2c;
+        }
+
+        .cta-button.secondary {
+            background: transparent;
+            color: #2c2c2c;
+            border: 2px solid #2c2c2c;
+        }
+
+        .cta-button.secondary:hover {
+            background: #2c2c2c;
+            color: white;
+        }
+
+        /* 스크롤 유도 애니메이션 */
+        .scroll-indicator {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 3rem;
+            text-align: center;
+            opacity: 0;
+            animation: fadeInUp 1s ease 4.5s forwards;
+            margin: 0 auto;
+        }
+
+        .scroll-mouse {
+            width: 18px;
+            height: 30px;
+            border: 1px solid rgba(44, 44, 44, 0.15);
+            border-radius: 10px;
+            position: relative;
+            margin: 0 auto 0.8rem;
+        }
+
+        .scroll-wheel {
+            width: 1px;
+            height: 4px;
+            background: rgba(44, 44, 44, 0.2);
+            border-radius: 1px;
+            position: absolute;
+            top: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: scroll-wheel 2s infinite;
+        }
+
+        @keyframes scroll-wheel {
+            0% {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(-50%) translateY(12px);
+                opacity: 0;
+            }
+        }
+
+        .scroll-indicator p {
+            font-size: 0.7rem;
+            color: rgba(44, 44, 44, 0.2);
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 400;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.08em;
+            font-family: 'Inter', sans-serif;
+            opacity: 1;
+        }
+
+        .hero h1 .char {
+            display: inline-block;
+            opacity: 0;
+            animation: charFadeIn 0.6s ease forwards;
+            transform: translateY(20px);
+        }
+
+        .hero .subtitle {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 3rem;
+            font-weight: 400;
+            font-family: 'Inter', sans-serif;
+            opacity: 0;
+            animation: fadeInUp 1s ease 3s forwards;
+            word-break: keep-all;
+            word-wrap: break-word;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 12px 32px;
+            background: #2c2c2c;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0;
+            animation: fadeInUp 1s ease 3.5s forwards;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .cta-button:hover {
+            background: #1a1a1a;
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(44, 44, 44, 0.3);
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
+        }
+
+        .cta-button:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        /* 섹션 공통 스타일 */
+        .section {
+            padding: 5rem 0;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-left: 2rem;
+            padding-right: 2rem;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 4rem;
+            color: #2c2c2c;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: -0.02em;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 3px;
+            background: #2c2c2c;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%) scaleX(0);
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .section-title.animated::after {
+            transform: translateX(-50%) scaleX(1);
+        }
+
+        .section-title:hover {
+            transform: translateY(-2px);
+        }
+
+        /* About 섹션 개선 */
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 4rem;
+            align-items: start;
+            margin-top: 8rem;  /* About 섹션 위에 3rem 여백 추가 */
+        }
+
+        #about.section {
+    padding-top: 7rem;  /* 원하는 만큼 조정 (5rem → 7rem) */
+}
+
+        .profile-section {
+            text-align: center;
+        }
+
+        .profile-image {
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #f8f8f8, #e8e8e8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 5rem;
+            margin: 0 auto 2rem;
+            border: 3px solid #eee;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .profile-image::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(44,44,44,0.1), transparent);
+            opacity: 0;
+            transition: all 0.5s ease;
+            animation: profileRotate 3s linear infinite;
+            animation-play-state: paused;
+        }
+
+        .profile-image:hover::before {
+            opacity: 1;
+            animation-play-state: running;
+        }
+
+        .profile-image:hover {
+            transform: scale(1.0);
+            border-color: #2c2c2c;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .profile-info h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c2c2c;
+            margin-bottom: 0.5rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .profile-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 0.3rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .profile-education {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 1rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .profile-description {
+            font-size: 0.95rem;
+            color: #666;
+            line-height: 1.6;
+            text-align: left;
+            padding: 1.5rem;
+            background: #f9f9f9;
+            border-radius: 12px;
+            border-left: 4px solid #2c2c2c;
+            margin-top: 1rem;
+            word-break: keep-all;
+            word-wrap: break-word;
+        }
+
+        .about-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #666;
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            word-break: keep-all;
+            word-wrap: break-word;
+        }
+
+        .about-text p {
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            word-break: keep-all;
+            word-wrap: break-word;
+        }
+
+        .about-text.show-text p {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .about-text.show-text p:nth-child(1) { transition-delay: 0.1s; }
+        .about-text.show-text p:nth-child(2) { transition-delay: 0.3s; }
+        .about-text.show-text p:nth-child(3) { transition-delay: 0.5s; }
+        .about-text.show-text .specialties { 
+            opacity: 1; 
+            transform: translateY(0);
+            transition-delay: 0.7s; 
+        }
+
+        .specialties {
+            margin-top: 2rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, #f9f9f9, #f0f0f0);
+            border-radius: 12px;
+            border: 1px solid #eee;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+
+        .specialties h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c2c2c;
+            margin-bottom: 1rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .specialties ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .specialties li {
+            margin-bottom: 0.8rem;
+            padding-left: 1.5rem;
+            position: relative;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            word-break: keep-all;
+            word-wrap: break-word;
+        }
+
+        .specialties li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #2c2c2c;
+            font-weight: bold;
+        }
+
+        .skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 2rem;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+
+        .skills.show-skills {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.7s;
+        }
+
+        .skill-tag {
+    background: #f5f5f5;
+    color: #666;
+    padding: 0.8rem 1.4rem;
+    border-radius: 25px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    border: 1px solid #eee;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(20px) scale(1);
+}
+
+        .skill-tag::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .skill-tag:hover {
+            background: #2c2c2c;
+            color: white;
+            border-color: #2c2c2c;
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 12px 25px rgba(44,44,44,0.3);
+        }
+
+        .skill-tag:hover::before {
+            left: 100%;
+        }
+
+        .skill-tag:active {
+            transform: translateY(-5px) scale(0.98);
+        }
+
+        .skill-tag.clicked {
+            background: #1a1a1a;
+            animation: skillPulse 0.3s ease;
+        }
+
+        .skill-break {
+    flex-basis: 100%;
+    height: 0;
+}
+
+        .about-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s ease;
+        }
+
+        .about-stats.show-stats {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 1s;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 2rem 1.5rem;
+            background: linear-gradient(135deg, #f9f9f9, #f0f0f0);
+            border-radius: 20px;
+            border: 1px solid #eee;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-item:hover {
+            background: linear-gradient(135deg, #ffffff, #f5f5f5);
+            border-color: #2c2c2c;
+            transform: translateY(-12px) rotate(2deg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-item:nth-child(2):hover {
+            transform: translateY(-12px) rotate(-2deg);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #2c2c2c;
+            font-family: 'Inter', sans-serif;
+            margin-bottom: 0.8rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* 포트폴리오 섹션 */
+        .portfolio {
+            background: #ffffff;
+        }
+
+        .portfolio-section {
+            margin-bottom: 5rem;
+        }
+
+        .portfolio-section-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #2c2c2c;
+            margin-bottom: 2.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid #f0f0f0;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+        }
+
+        .portfolio-section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 60px;
+            height: 2px;
+            background: #2c2c2c;
+            transition: width 0.3s ease;
+        }
+
+        .portfolio-section-title:hover::after {
+            width: 120px;
+        }
+
+        .team-work .portfolio-section-title {
+            color: #555;
+        }
+
+        .team-work .portfolio-section-title::after {
+            background: #555;
+        }
+
+        .graphic-work .portfolio-section-title {
+            color: #8B4513;
+        }
+
+        .graphic-work .portfolio-section-title::after {
+            background: #8B4513;
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        /* 팀 작업 아이템 특별 스타일 */
+        .team-item {
+            position: relative;
+            border: 2px solid #e8e8e8;
+            background: linear-gradient(135deg, #ffffff, #f8f8f8);
+        }
+
+        .team-item:hover {
+            border-color: #666;
+            box-shadow: 0 15px 30px rgba(102, 102, 102, 0.15);
+        }
+
+        .contribution-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: linear-gradient(135deg, #666, #555);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            z-index: 3;
+            box-shadow: 0 2px 8px rgba(102, 102, 102, 0.3);
+        }
+
+        .contribution-details {
+            margin: 1.5rem 0;
+            padding: 1.2rem;
+            background: #f8f8f8;
+            border-radius: 8px;
+            border-left: 4px solid #666;
+        }
+
+        .contribution-details h4 {
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .contribution-details ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .contribution-details li {
+            margin-bottom: 0.5rem;
+            padding-left: 1.2rem;
+            position: relative;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            color: #555;
+        }
+
+        .contribution-details li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: #666;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .portfolio-item {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #eee;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .portfolio-item:hover {
+            border-color: #2c2c2c;
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .portfolio-item:hover .portfolio-content::after {
+    opacity: 1;
+}
+
+        .portfolio-item:active {
+            transform: translateY(-6px);
+            transition: transform 0.1s ease;
+        }
+
+        .portfolio-item .view-project-btn {
+            position: absolute;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            color: #2c2c2c;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(44, 44, 44, 0.1);
+            white-space: nowrap;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            z-index: 5;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .portfolio-item:hover .view-project-btn {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .portfolio-item .view-project-btn:hover {
+            background: #2c2c2c;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(44, 44, 44, 0.3);
+        }
+
+        .portfolio-image {
+            height: 200px;
+            background: #f8f8f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 2rem;
+            transition: transform 0.3s ease;
+            overflow: hidden;
+            position: relative;
+        }
+        
+
+        .portfolio-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .portfolio-image video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .portfolio-item:hover .portfolio-image img {
+            transform: scale(1.05);
+        }
+
+        .portfolio-item:hover .portfolio-image video {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        .portfolio-content {
+            padding: 1.5rem;
+            position: relative;
+            z-index: 2;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .portfolio-content::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: linear-gradient(
+        to top,
+        rgba(255, 255, 255, 1) 0%,
+        rgba(255, 255, 255, 0.95) 20%,
+        rgba(255, 255, 255, 0.7) 50%,
+        transparent 100%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 3;
+}
+
+        .portfolio-content h3 {
+            margin-bottom: 1rem;
+            color: #2c2c2c;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .portfolio-content p {
+            color: #666;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        .portfolio-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .portfolio-tag {
+            background: #f8f8f8;
+            color: #666;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* 네비게이션 active 상태 */
+        .nav-links a.active {
+            color: #2c2c2c;
+            background: rgba(44,44,44,0.08);
+        }
+
+        /* 섹션 제목 호버 시 언더라인 애니메이션 */
+        .section-title:hover::after {
+            transform: translateX(-50%) scaleX(1.5);
+        }
+
+        /* Contact 아이템 클릭 피드백 */
+        .contact-item:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        /* 툴팁 */
+        .tooltip {
+            position: relative;
+        }
+
+        .tooltip::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(44,44,44,0.9);
+            color: white;
+            padding: 0.5rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            margin-bottom: 0.5rem;
+        }
+
+        .tooltip:hover::before {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-5px);
+        }
+
+        .contact {
+            background: #2c2c2c;
+            color: white;
+        }
+
+        .contact-content {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .contact-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .contact-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .contact-item div {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        /* 푸터 */
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+        }
+
+        /* 애니메이션 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes charFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes profileRotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes skillPulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .animate-on-scroll.animated {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 스크롤바 스타일링 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f5f5f5;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ddd;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #bbb;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .about-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .portfolio-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section {
+                
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .about-stats {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 파티클 캔버스 -->
+    <canvas id="particleCanvas"></canvas>
+    
+    <!-- 네비게이션 -->
+    <nav id="navbar">
+        <div class="nav-container">
+            <div class="logo">Portfolio</div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#portfolio">Portfolio</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 히어로 섹션 -->
+    <section id="home" class="hero">
+        <!-- 파티클 캔버스 -->
+        <canvas id="heroParticleCanvas"></canvas>
+        
+        <div class="hero-content">
+            <div class="hero-badge">UX/UI Designer & Interactive Web Designer</div>
+            <h1 id="main-title">안녕하세요, 한수지입니다</h1>
+            <p class="subtitle">사용자 경험을 중심으로 인터랙티브한 웹 디자인을 설계하고, 디자인을 실제로 구현할 수 있는 기술력을 갖춘 디자이너입니다</p>
+            
+            <!-- 핵심 키워드 태그들 -->
+            <div class="hero-tags">
+                <span class="hero-tag">Design to Code</span>
+                <span class="hero-tag">Interactive Prototyping</span>
+                <span class="hero-tag">User-Centered Design</span>
+            </div>
+            
+            <div class="hero-actions">
+                <a href="#portfolio" class="cta-button primary">Works</a>
+                <a href="#contact" class="cta-button secondary">Contact</a>
+            </div>
+        </div>
+
+        <!-- 스크롤 유도 애니메이션 -->
+        <div class="scroll-indicator">
+            <div class="scroll-mouse">
+                <div class="scroll-wheel"></div>
+            </div>
+            <p>Scroll to explore</p>
+        </div>
+    </section>
+
+    <!-- About 섹션 -->
+    <section id="about" class="section">
+        <h2 class="section-title animate-on-scroll">About Me</h2>
+        <div class="about-content">
+            <div class="profile-section animate-on-scroll">
+                <div class="profile-image">
+                    👩🏻‍💻
+                </div>
+                <div class="profile-info">
+                    <h3>한수지</h3>
+                    <p class="profile-title">UX/UI Designer • Interactive Web Designer</p>
+                    <p class="profile-education">홍익대학교 시각디자인학과 2학년</p>
+                    <p class="profile-description">
+                        사용자 중심의 디자인 철학을 바탕으로 인터랙티브한 웹 경험을 만들어내는 디자이너입니다. 
+                        디자인뿐만 아니라 그것을 실제로 구현할 수 있는 기술적 이해를 통해 더 완성도 높은 결과물을 만들어내고자 합니다.
+                    </p>
+                </div>
+            </div>
+            <div class="animate-on-scroll">
+                <div class="about-text" id="about-text">
+                    <p>홍익대학교에서 <strong>시각디자인을 전공</strong>하며 디자인의 기초를 탄탄히 다지고 있습니다. 단순한 그래픽 디자인을 넘어 <strong>사용자와 상호작용하는 디지털 경험</strong>을 만드는 것에 관심을 가지고 있으며, 이를 위해 웹 기술도 함께 학습하고 있습니다.</p>
+                    
+                    <p>디자인 아이디어를 <strong>실제 동작하는 웹사이트로 구현</strong>할 수 있는 능력을 바탕으로, 디자인과 개발 팀 사이의 가교 역할을 할 수 있습니다. 사용성 테스트부터 최종 결과물까지 전 과정을 이해하고 있습니다.</p>
+                    
+                    <p><strong>인터랙션 디자인과 웹 구현 기술</strong>을 결합하여, 사용자에게 더 직관적이고 매력적인 디지털 경험을 제공하는 것이 저의 목표입니다.</p>
+                    
+                    <div class="specialties">
+                        <h4>전문 분야</h4>
+                        <ul>
+    
+                            <li><strong>UI 디자인 & 비주얼</strong> - 인터페이스 디자인, 타이포그래피, 컬러 시스템</li>
+                            <li><strong>인터랙션 디자인</strong> - 프로토타이핑, 마이크로인터랙션, 애니메이션 설계</li>
+                            <li><strong>웹 구현 & 기술 이해</strong> - HTML/CSS/JavaScript, 반응형 웹, 웹 접근성</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="skills" id="skills-container">
+                    <span class="skill-tag">Figma</span>
+                    <span class="skill-tag">Photoshop</span>
+                    <span class="skill-tag">Illustrator</span>
+                    <span class="skill-tag">InDesign</span>
+                    <span class="skill-tag">Maya</span>
+                    <div class="skill-break"></div>
+                    <span class="skill-tag">HTML</span>
+                    <span class="skill-tag">CSS</span>
+                    <span class="skill-tag">JavaScript</span>
+                </div>
+                <div class="about-stats" id="stats-container">
+                    <div class="stat-item">
+                        <div class="stat-number" data-target="7">7</div>
+                        <div class="stat-label">진행한 프로젝트</div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 포트폴리오 섹션 -->
+    <section id="portfolio" class="section portfolio">
+        <h2 class="section-title animate-on-scroll">Portfolio</h2>
+        
+        <!-- 팀 작업 섹션 -->
+        <div class="portfolio-section team-work">
+            <h3 class="portfolio-section-title animate-on-scroll">Team project (UX/UI) </h3>
+            <div class="portfolio-grid">
+                <div class="portfolio-item team-item" data-url="uxpf.html">
+                    <div class="contribution-badge">기여도 50%</div>
+                    <div class="portfolio-image">
+                        <img src="pf_t.png" alt="Food Service UX/UI Project">
+                        <video muted loop preload="metadata">
+                            <source src="pf_team_1_demo.mp4" type="video/mp4">
+                            <source src="pf_team_1_demo.webm" type="video/webm">
+                        </video>
+                    </div>
+                    <div class="portfolio-content">
+                        <h3>Food Service Platform UX/UI Project</h3>
+                        <p>이웃과 식재료를 공유하고 쿠킹 커뮤니티를 형성할 수 있는 플랫폼, "식꾸"입니다.</p>
+                        <div class="contribution-details">
+                            <h4>담당 영역</h4>
+                            <ul>
+                                <li>프로젝트 기획 및 컨셉 설정</li>
+                                <li>비주얼 시스템, 디자인 가이드라인</li>
+                                <li>정보 구조 설계(IA)</li>
+                                <li>Final UI Design: 하이파이 화면 디자인 제작 및 시각적 일관성 확보</li>
+                            </ul>
+                        </div>
+                        <div class="portfolio-tags">
+                            <span class="portfolio-tag">UX Research</span>
+                            <span class="portfolio-tag">UI Design</span>
+                            <span class="portfolio-tag">Figma</span>
+                        </div>
+                    </div>
+                    <div class="view-project-btn">View Project →</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 개인 작업 섹션 -->
+        <div class="portfolio-section">
+            <h3 class="portfolio-section-title animate-on-scroll">Personal works (Web)</h3>
+            <div class="portfolio-grid">
+                <div class="portfolio-item" data-url="https://example.com/project1">
+                    <div class="portfolio-image">
+                        <img src="pf_1.png" alt="E-Commerce Platform">
+                        <video muted loop preload="metadata">
+                            <source src="pf_1_demo.mov" type="video/mp4">
+                            <source src="pf_1_demo.webm" type="video/webm">
+                        </video>
+                    </div>
+                    <div class="portfolio-content">
+                        <h3>You2</h3>
+                        <p>평행세계에서 살아가는 또 다른 자아를 선택하고 구매하는, 가상의 온라인 쇼핑몰입니다.</p>
+                        <div class="portfolio-tags">
+                            <span class="portfolio-tag">HTML5</span>
+                            <span class="portfolio-tag">CSS3</span>
+                            <span class="portfolio-tag">JavaScript</span>
+                        </div>
+                    </div>
+                   
+                </div>
+
+                <div class="portfolio-item" data-url="https://sujihan24.github.io/AI_cemetry_/">
+                    <div class="portfolio-image">
+                        <img src="pf_2.png" alt="Task Management App">
+                        <video muted loop preload="metadata">
+                            <source src="pf_2.mov" type="video/mp4">
+                            <source src="pf_2_demo.webm" type="video/webm">
+                        </video>
+                    </div>
+                    <div class="portfolio-content">
+                        <h3>AI Cemetry</h3>
+                        <p>현대인들에게 AI는 어떤 존재인가? 죽음을 맞이한(폐기된) AI에 대한 고찰을 담은 AI 추모 서비스입니다.</p>
+                        <div class="portfolio-tags">
+                            <span class="portfolio-tag">Three.js</span>
+                            <span class="portfolio-tag">GSAP</span>
+                        </div>
+                    </div>
+                    <div class="view-project-btn">View Project →</div>
+                </div>
+
+                <div class="portfolio-item" data-url="https://sujihan24.github.io/LURORIA/">
+                    <div class="portfolio-image">
+                        <img src="pf_3.png" alt="Creative Portfolio Website">
+                        <video muted loop preload="metadata">
+                            <source src="pf_3.mov" type="video/mp4">
+                            <source src="pf_3_demo.webm" type="video/webm">
+                        </video>
+                    </div>
+                    <div class="portfolio-content">
+                        <h3>LURORIA</h3>
+                        <p>인간의 다양한 공포심을 체험할 수 있는 Interactive Web입니다.</p>
+                        <div class="portfolio-tags">
+                            <span class="portfolio-tag">Three.js</span>
+                            <span class="portfolio-tag">GSAP</span>
+                            <span class="portfolio-tag">Audio API</span>
+                        </div>
+                    </div>
+                    <div class="view-project-btn">View Project →</div>
+                </div>
+
+                <div class="portfolio-item" data-url="https://sujihan24.github.io/LUCKY_Tarot-/index.html">
+                    <div class="portfolio-image">
+                        <img src="pf_4.png" alt="Data Visualization Dashboard">
+                        <video muted loop preload="metadata">
+                            <source src="pf_4.mov" type="video/mp4">
+                            <source src="pf_4_demo.webm" type="video/webm">
+                        </video>
+                    </div>
+                    <div class="portfolio-content">
+                        <h3>Lucky Tarot</h3>
+                        <p>네잎클로버 테마의 타로 서비스, 소소한 운세를 점치는 Interactive Web입니다.</p>
+                        <div class="portfolio-tags">
+                            <span class="portfolio-tag">HTML5</span>
+                            <span class="portfolio-tag">CSS3</span>
+                            <span class="portfolio-tag">JavaScript</span>
+                        </div>
+                    </div>
+                    <div class="view-project-btn">View Project →</div>
+                </div>
+
+                <div class="portfolio-item" data-url="https://sujihan24.github.io/pixelation/">
+                    <div class="portfolio-image">
+                        <img src="pf_5.png" alt="Mobile Banking App">
+                        <video muted loop preload="metadata">
+                            <source src="pf_5.mov" type="video/mp4">
+                            <source src="pf_5_demo.webm" type="video/webm">
+                        </video>
+                    </div>
+                    <div class="portfolio-content">
+                        <h3>Memory Pixelation</h3>
+                        <p>디지털 열화 현상으로 왜곡된 디지털상 기록들을 아카이빙하고 추억하는 Interactive Web입니다.</p>
+                        <div class="portfolio-tags">
+                            <span class="portfolio-tag">HTML5</span>
+                            <span class="portfolio-tag">CSS3</span>
+                            <span class="portfolio-tag">JavaScript</span>
+                        </div>
+                    </div>
+                    <div class="view-project-btn">View Project →</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3D & 그래픽 작업 섹션 -->
+        <div class="portfolio-section graphic-work">
+            <h3 class="portfolio-section-title animate-on-scroll">3D works</h3>
+            <div class="portfolio-grid">
+                <div class="portfolio-item" data-url="3dpf.html">
+                    <div class="portfolio-image">
+                        <img src="3dtitle.png" alt="3D Product Visualization">
+                        <video muted loop preload="metadata">
+                            <source src="3d_1_demo.mp4" type="video/mp4">
+                            <source src="3d_1_demo.webm" type="video/webm">
+                        </video>
+                    </div>
+                    <div class="portfolio-content">
+                        <h3>3D Visualization</h3>
+                        <p>Modeling, Texturing, Lighting, Rendering, Composit, Camera Layout</p>
+                        <div class="portfolio-tags">
+                            <span class="portfolio-tag">Maya</span>
+                        </div>
+                    </div>
+                    <div class="view-project-btn">View Project →</div>
+                </div>
+
+                
+            </div>
+        </div>
+    </section>
+
+    <!-- 연락처 섹션 -->
+    <section id="contact" class="section contact">
+        <h2 class="section-title animate-on-scroll">Get In Touch</h2>
+        <div class="contact-content animate-on-scroll">
+            <p>새로운 프로젝트나 협업 기회에 대해 이야기하고 싶으시다면 언제든 연락해주세요!</p>
+            <div class="contact-info">
+                <div class="contact-item animate-on-scroll">
+                    <div>📧</div>
+                    <h3>Email</h3>
+                    <p>serasuji@naver.com</p>
+                </div>
+                
+                <div class="contact-item animate-on-scroll">
+                    <div>💻</div>
+                    <h3>GitHub</h3>
+                    <p>https://github.com/sujihan24</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 푸터 -->
+    <footer>
+        <p>&copy; 2025 한수지 Portfolio. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // 스크롤 기반 패럴랙스 효과 (개선된 버전)
+        let scrollY = 0;
+        let ticking = false;
+
+        function updateParallax() {
+            scrollY = window.pageYOffset;
+            const windowHeight = window.innerHeight;
+            
+            // 히어로 섹션 패럴랙스 (더 부드럽게)
+            const hero = document.querySelector('.hero');
+            if (hero && scrollY < windowHeight) {
+                const heroContent = hero.querySelector('.hero-content');
+                const scrollIndicator = hero.querySelector('.scroll-indicator');
+                const scrollProgress = scrollY / windowHeight;
+                
+                // 히어로 콘텐츠는 매우 부드럽게 위로
+                if (heroContent) {
+                    const translateY = scrollY * 0.2;
+                    const opacity = Math.max(0, 1 - scrollProgress * 1.2);
+                    heroContent.style.transform = `translateY(${translateY}px)`;
+                    heroContent.style.opacity = opacity;
+                }
+                
+                // 스크롤 인디케이터는 매우 빠르게, 매우 일찍 사라짐
+                if (scrollIndicator) {
+                    const indicatorProgress = Math.min(1, scrollY / (windowHeight * 0.08));
+                    const opacity = Math.max(0, 1 - indicatorProgress * 5);
+                    const translateY = scrollY * 1.2;
+                    
+                    scrollIndicator.style.opacity = opacity;
+                    scrollIndicator.style.transform = `translateY(-${translateY}px)`;
+                }
+
+                // 파티클도 스크롤에 반응하도록
+                if (interactiveParticles.length > 0) {
+                    interactiveParticles.forEach((particle, index) => {
+                        particle.vx += (scrollProgress - 0.5) * 0.001 * (index % 2 ? 1 : -1);
+                        particle.vy += scrollProgress * 0.0005;
+                    });
+                }
+            }
+
+            // About 섹션 패럴랙스 (더 자연스럽게)
+            const aboutSection = document.querySelector('#about');
+            if (aboutSection) {
+                const rect = aboutSection.getBoundingClientRect();
+                const sectionProgress = Math.max(0, Math.min(1, (windowHeight - rect.top) / (windowHeight * 1.2)));
+                
+                // 프로필 이미지 더 부드러운 3D 효과
+                const profileImage = aboutSection.querySelector('.profile-image');
+                if (profileImage && rect.top < windowHeight && rect.bottom > 0) {
+                    const rotateY = Math.sin(sectionProgress * Math.PI) * 8;
+                    const scale = 0.95 + sectionProgress * 0.05;
+                    profileImage.style.transform = `rotateY(${rotateY}deg) scale(${scale})`;
+                    profileImage.style.filter = `brightness(${0.95 + sectionProgress * 0.05})`;
+                }
+
+                // About 텍스트들 순차적이고 부드러운 등장
+                const aboutTexts = aboutSection.querySelectorAll('.about-text p, .specialties');
+                aboutTexts.forEach((text, index) => {
+                    if (rect.top < windowHeight && rect.bottom > 0) {
+                        const delay = index * 0.15;
+                        const progress = Math.max(0, Math.min(1, sectionProgress - delay));
+                        const easeProgress = progress * progress * (3 - 2 * progress); // smooth ease
+                        
+                        text.style.transform = `translateY(${(1 - easeProgress) * 40}px)`;
+                        text.style.opacity = easeProgress;
+                    }
+                });
+
+                // 통계 카운터 더 세밀한 애니메이션
+                const stats = aboutSection.querySelectorAll('.stat-item');
+                stats.forEach((stat, index) => {
+                    if (rect.top < windowHeight * 0.8 && rect.bottom > 0) {
+                        const time = performance.now() * 0.001;
+                        const offset = Math.sin(time + index * 0.8) * 5;
+                        const scale = 0.98 + Math.sin(sectionProgress * Math.PI + index) * 0.02;
+                        stat.style.transform = `translateY(${offset}px) scale(${scale})`;
+                    }
+                });
+            }
+
+            // 포트폴리오 섹션 패럴랙스 (겹침 방지)
+            const portfolioSection = document.querySelector('#portfolio');
+            if (portfolioSection) {
+                const rect = portfolioSection.getBoundingClientRect();
+                const portfolioItems = portfolioSection.querySelectorAll('.portfolio-item');
+                
+                portfolioItems.forEach((item, index) => {
+                    if (rect.top < windowHeight && rect.bottom > 0) {
+                        const itemRect = item.getBoundingClientRect();
+                        const itemCenter = itemRect.top + itemRect.height / 2;
+                        const distanceFromCenter = (windowHeight / 2 - itemCenter) / windowHeight;
+                        
+                        // 각 아이템의 패럴랙스 속도를 다르게 (겹침 방지)
+                        const speed = 0.03 + (index % 3) * 0.01;
+                        const offset = distanceFromCenter * 30 * speed;
+                        
+                        // 호버 상태가 아닐 때만 패럴랙스 적용
+                        if (!item.matches(':hover')) {
+                            const scale = 0.98 + Math.max(0, Math.min(0.04, Math.abs(distanceFromCenter) * 0.04));
+                            item.style.transform = `translateY(${offset}px) scale(${scale})`;
+                            item.style.transition = 'transform 0.1s ease-out';
+                        }
+                    }
+                });
+            }
+
+            // 연락처 섹션 패럴랙스 (더 미묘하게)
+            const contactSection = document.querySelector('#contact');
+            if (contactSection) {
+                const rect = contactSection.getBoundingClientRect();
+                
+                if (rect.top < windowHeight && rect.bottom > 0) {
+                    const sectionProgress = (windowHeight - rect.top) / windowHeight;
+                    const time = performance.now() * 0.0008;
+                    
+                    // 연락처 아이템들 더 부드러운 웨이브 효과
+                    const contactItems = contactSection.querySelectorAll('.contact-item');
+                    contactItems.forEach((item, index) => {
+                        const wave = Math.sin(time + index * 0.8) * 8;
+                        const fade = Math.sin(sectionProgress * Math.PI) * 0.5 + 0.5;
+                        item.style.transform = `translateY(${wave}px)`;
+                        item.style.opacity = 0.8 + fade * 0.2;
+                    });
+                }
+            }
+
+            ticking = false;
+        }
+
+        function requestTick() {
+            if (!ticking) {
+                requestAnimationFrame(updateParallax);
+                ticking = true;
+            }
+        }
+
+        // 커서 반응 파티클 시스템 (개선된 버전)
+        let interactiveParticles = [];
+        let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+        let canvas, ctx;
+
+        function initInteractiveParticles() {
+            canvas = document.getElementById('heroParticleCanvas');
+            if (!canvas) return;
+            
+            ctx = canvas.getContext('2d');
+            
+            function resizeCanvas() {
+                const hero = document.querySelector('.hero');
+                canvas.width = hero.offsetWidth;
+                canvas.height = hero.offsetHeight;
+            }
+            
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            // 더 많은 파티클로 풍부한 효과
+            for (let i = 0; i < 50; i++) {
+                interactiveParticles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    size: Math.random() * 3 + 1,
+                    opacity: 0,
+                    targetOpacity: Math.random() * 0.3 + 0.1, // 더 연하게
+                    connectionRadius: 150, // 연결 거리 증가
+                    repelRadius: 100 // 반발 거리 증가
+                });
+            }
+
+            // 마우스 위치 추적
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                mouse.x = e.clientX - rect.left;
+                mouse.y = e.clientY - rect.top;
+            });
+
+            // 캔버스 밖으로 나가면 중앙으로 리셋
+            canvas.addEventListener('mouseleave', () => {
+                mouse.x = canvas.width / 2;
+                mouse.y = canvas.height / 2;
+            });
+
+            animateInteractiveParticles();
+        }
+
+        function animateInteractiveParticles() {
+            if (!ctx) return;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 파티클 업데이트
+            interactiveParticles.forEach((particle, i) => {
+                // 기본 움직임
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+
+                // 마우스와의 거리 계산
+                const dx = mouse.x - particle.x;
+                const dy = mouse.y - particle.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                // 마우스 근처에서 반발 효과와 추가 움직임
+                if (distance < particle.repelRadius && distance > 0) {
+                    const force = (particle.repelRadius - distance) / particle.repelRadius;
+                    const angle = Math.atan2(dy, dx);
+                    
+                    // 마우스에서 밀려나는 효과
+                    particle.vx -= Math.cos(angle) * force * 0.05; // 반응성 증가
+                    particle.vy -= Math.sin(angle) * force * 0.05;
+                    
+                    // 마우스 주변에서 약간 밝아짐
+                    particle.targetOpacity = Math.min(0.6, 0.2 + force * 0.4);
+                } else if (distance < particle.connectionRadius) {
+                    // 연결 범위에서는 약간 끌려가는 효과
+                    const attractForce = 0.001;
+                    const angle = Math.atan2(dy, dx);
+                    particle.vx += Math.cos(angle) * attractForce;
+                    particle.vy += Math.sin(angle) * attractForce;
+                    particle.targetOpacity = Math.random() * 0.2 + 0.1; // 더 연하게
+                } else {
+                    particle.targetOpacity = Math.random() * 0.15 + 0.05; // 기본 상태에서 더 연하게
+                }
+
+                // 투명도 부드럽게 변화 (더 빠른 반응)
+                particle.opacity += (particle.targetOpacity - particle.opacity) * 0.08;
+
+                // 속도 감쇠
+                particle.vx *= 0.98;
+                particle.vy *= 0.98;
+
+                // 경계 반사
+                if (particle.x < 0 || particle.x > canvas.width) {
+                    particle.vx *= -0.8;
+                    particle.x = Math.max(0, Math.min(canvas.width, particle.x));
+                }
+                if (particle.y < 0 || particle.y > canvas.height) {
+                    particle.vy *= -0.8;
+                    particle.y = Math.max(0, Math.min(canvas.height, particle.y));
+                }
+
+                // 파티클 그리기
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(44, 44, 44, ${particle.opacity})`;
+                ctx.fill();
+
+                // 다른 파티클과의 연결선 그리기
+                for (let j = i + 1; j < interactiveParticles.length; j++) {
+                    const other = interactiveParticles[j];
+                    const pdx = other.x - particle.x;
+                    const pdy = other.y - particle.y;
+                    const pDistance = Math.sqrt(pdx * pdx + pdy * pdy);
+
+                    if (pDistance < particle.connectionRadius) {
+                        const lineOpacity = (particle.connectionRadius - pDistance) / particle.connectionRadius;
+                        const finalOpacity = lineOpacity * Math.min(particle.opacity, other.opacity) * 0.5;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(particle.x, particle.y);
+                        ctx.lineTo(other.x, other.y);
+                        ctx.strokeStyle = `rgba(44, 44, 44, ${finalOpacity})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+
+                // 마우스와의 연결선
+                if (distance < particle.connectionRadius) {
+                    const lineOpacity = (particle.connectionRadius - distance) / particle.connectionRadius;
+                    const finalOpacity = lineOpacity * particle.opacity * 0.3;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(particle.x, particle.y);
+                    ctx.lineTo(mouse.x, mouse.y);
+                    ctx.strokeStyle = `rgba(44, 44, 44, ${finalOpacity})`;
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                }
+            });
+
+            // 마우스 위치에 중심점 표시
+            ctx.beginPath();
+            ctx.arc(mouse.x, mouse.y, 4, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(44, 44, 44, 0.1)';
+            ctx.fill();
+
+            requestAnimationFrame(animateInteractiveParticles);
+        }
+
+        // 초기화
+        // 초기화
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(initInteractiveParticles, 100);
+    
+    // About 섹션의 요소들을 직접 관찰자에 추가
+    const aboutText = document.getElementById('about-text');
+    const skillsContainer = document.getElementById('skills-container');
+    const statsContainer = document.getElementById('stats-container');
+    
+    if (aboutText) observer.observe(aboutText);
+    if (skillsContainer) observer.observe(skillsContainer);
+    if (statsContainer) observer.observe(statsContainer);
+});
+
+        // 커서 트레일 시스템 (간소화)
+        let trails = [];
+        let mousePos = { x: 0, y: 0 };
+        let isMouseMoving = false;
+        let mouseTimeout;
+
+        // 커서 트레일 생성
+        function createCursorTrail() {
+            for (let i = 0; i < 8; i++) {
+                const trail = document.createElement('div');
+                trail.className = 'cursor-trail';
+                trail.style.opacity = (8 - i) * 0.02;
+                trail.style.transform = 'scale(' + (0.3 + i * 0.1) + ')';
+                document.body.appendChild(trail);
+                trails.push({
+                    element: trail,
+                    x: 0,
+                    y: 0,
+                    delay: i * 20
+                });
+            }
+        }
+
+        // 마우스 움직임 추적
+        document.addEventListener('mousemove', (e) => {
+            mousePos.x = e.clientX;
+            mousePos.y = e.clientY;
+            isMouseMoving = true;
+
+            clearTimeout(mouseTimeout);
+            mouseTimeout = setTimeout(() => {
+                isMouseMoving = false;
+            }, 100);
+        });
+
+        // 트레일 애니메이션
+        function animateTrails() {
+            if (isMouseMoving) {
+                trails.forEach((trail, index) => {
+                    setTimeout(() => {
+                        trail.x += (mousePos.x - trail.x) * 0.3;
+                        trail.y += (mousePos.y - trail.y) * 0.3;
+                        trail.element.style.opacity = (trails.length - index) * 0.02;
+                    }, trail.delay);
+                });
+            } else {
+                trails.forEach((trail, index) => {
+                    trail.element.style.opacity = Math.max(0, trail.element.style.opacity - 0.001);
+                });
+            }
+            requestAnimationFrame(animateTrails);
+        }
+
+        // 리플 효과
+        function addRippleEffect() {
+            const rippleElements = document.querySelectorAll('.stat-item, .contact-item');
+            
+            rippleElements.forEach(element => {
+                element.classList.add('ripple-effect');
+                
+                element.addEventListener('click', function(e) {
+                    this.classList.remove('active');
+                    setTimeout(() => this.classList.add('active'), 10);
+                    setTimeout(() => this.classList.remove('active'), 600);
+                });
+            });
+        }
+
+        // 텍스트 호버 시 문자 애니메이션
+        function addTextHoverEffect() {
+            const titles = document.querySelectorAll('.section-title, .hero h1');
+            
+            titles.forEach(title => {
+                title.addEventListener('mouseenter', function() {
+                    const chars = this.textContent.split('');
+                    this.innerHTML = chars.map((char, index) => 
+                        `<span style="transition-delay: ${index * 20}ms; display: inline-block;">${char === ' ' ? '&nbsp;' : char}</span>`
+                    ).join('');
+                    
+                    const spans = this.querySelectorAll('span');
+                    spans.forEach(span => {
+                        span.style.transform = 'translateY(-3px)';
+                        span.style.color = '#1a1a1a';
+                    });
+                });
+
+                title.addEventListener('mouseleave', function() {
+                    const spans = this.querySelectorAll('span');
+                    spans.forEach(span => {
+                        span.style.transform = 'translateY(0)';
+                        span.style.color = '';
+                    });
+                });
+            });
+        }
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                createCursorTrail();
+                animateTrails();
+                addRippleEffect();
+                addTextHoverEffect();
+            }, 1000);
+        });
+
+        // 인터랙티브 기능들 추가
+        
+        // 네비게이션 활성 상태 업데이트
+        function updateActiveNavigation() {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-links a');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.getBoundingClientRect().top;
+                if (sectionTop <= 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').substring(1) === current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // 스킬 태그 클릭 이벤트 개선
+        document.querySelectorAll('.skill-tag').forEach(tag => {
+            tag.addEventListener('click', function() {
+                // 클릭 피드백
+                this.classList.add('clicked');
+                setTimeout(() => this.classList.remove('clicked'), 300);
+            });
+        });
+
+        // 포트폴리오 아이템 클릭 개선 - 간단하게
+        document.querySelectorAll('.portfolio-item').forEach(item => {
+            // 카드 전체 클릭
+            item.addEventListener('click', function(e) {
+                // 버튼 클릭이면 무시
+                if (e.target.classList.contains('view-project-btn')) {
+                    return;
+                }
+                const url = this.getAttribute('data-url');
+                if (url) {
+                    window.open(url, '_blank');
+                }
+            });
+            
+            // 버튼 클릭
+            const btn = item.querySelector('.view-project-btn');
+            if (btn) {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const url = item.getAttribute('data-url');
+                    if (url) {
+                        window.open(url, '_blank');
+                    }
+                });
+            }
+        });
+
+        // 연락처 아이템 클릭 이벤트
+        document.querySelectorAll('.contact-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const h3 = this.querySelector('h3').textContent;
+                const p = this.querySelector('p').textContent;
+                
+                // 클립보드에 복사 (이메일의 경우)
+                if (h3 === 'Email') {
+                    navigator.clipboard.writeText(p).catch(() => {
+                        // 복사 실패시 아무것도 하지 않음
+                    });
+                }
+            });
+        });
+
+        // 스크롤 이벤트에 네비게이션 업데이트 추가
+        window.addEventListener('scroll', () => {
+            requestTick();
+            updateActiveNavigation();
+        }, { passive: true });
+
+        // 히어로 태그 클릭 이벤트
+        document.querySelectorAll('.hero-tag').forEach(tag => {
+            tag.addEventListener('click', function() {
+                const tagText = this.textContent;
+                let section = '';
+                
+                if (tagText.includes('Design')) section = '#about';
+                else if (tagText.includes('Prototyping')) section = '#portfolio';
+                else section = '#contact';
+                
+                document.querySelector(section).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // 네비게이션 스크롤 효과
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // 스크롤 진행률 표시기
+        const progressBar = document.createElement('div');
+        progressBar.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background: #2c2c2c;
+            z-index: 9999;
+            transition: width 0.2s ease;
+        `;
+        document.body.appendChild(progressBar);
+
+        window.addEventListener('scroll', function() {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            progressBar.style.width = scrolled + '%';
+        });
+
+        // 스무스 스크롤
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // 스크롤 애니메이션 관찰자
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animated');
+                    
+                    // About 섹션 텍스트 애니메이션
+                    if (entry.target.id === 'about-text') {
+                        entry.target.classList.add('show-text');
+                    }
+                    
+                    // 스킬 태그 애니메이션
+                    // 스킬 태그 애니메이션
+if (entry.target.id === 'skills-container') {
+    entry.target.classList.add('show-skills');
+    
+    // 스킬 태그 개별 애니메이션
+    const skillTags = entry.target.querySelectorAll('.skill-tag');
+    skillTags.forEach((tag, index) => {
+        setTimeout(() => {
+            tag.style.opacity = '1';
+            tag.style.transform = 'translateY(0) scale(1)';
+            tag.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        }, index * 100);
+    });
+}
+                    // 통계 애니메이션
+                    if (entry.target.id === 'stats-container') {
+                        entry.target.classList.add('show-stats');
+                        
+                        // 카운터 애니메이션
+                        const numbers = entry.target.querySelectorAll('.stat-number');
+                        numbers.forEach(number => {
+                            animateCounter(number);
+                        });
+                    }
+                }
+            });
+        }, observerOptions);
+
+        // 카운터 애니메이션 함수
+        function animateCounter(element) {
+            const target = parseInt(element.getAttribute('data-target'));
+            let current = 0;
+            const increment = target / 60;
+            const timer = setInterval(() => {
+                current += increment;
+                element.textContent = Math.floor(current);
+                if (current >= target) {
+                    element.textContent = target;
+                    clearInterval(timer);
+                }
+            }, 25);
+        }
+
+        // 애니메이션 요소 관찰 시작
+        document.querySelectorAll('.animate-on-scroll').forEach(el => {
+            observer.observe(el);
+        });
+
+        // 포트폴리오 아이템 클릭 이벤트 - 개선된 호버 효과
+        document.querySelectorAll('.portfolio-item').forEach(item => {
+            // 비디오 요소 가져오기
+            const video = item.querySelector('.portfolio-image video');
+            
+            // 부드러운 호버 효과 (기울임 효과 제거)
+            item.addEventListener('mouseenter', function() {
+                const image = this.querySelector('.portfolio-image');
+                const content = this.querySelector('.portfolio-content');
+                const title = this.querySelector('h3');
+                const tags = this.querySelectorAll('.portfolio-tag');
+                
+                // 비디오가 있으면 재생
+                if (video) {
+                    video.currentTime = 0;
+                    video.play().catch(e => {
+                        console.log('Video autoplay prevented:', e);
+                    });
+                }
+                
+                // 이미지에 미묘한 확대 효과
+                if (image) {
+                    image.style.transform = 'scale(1.08)';
+                }
+                
+                // 콘텐츠 영역 살짝 위로
+                if (content) {
+                    content.style.transform = 'translateY(-4px)';
+                }
+                
+                // 제목 색상만 변경
+                if (title) {
+                    title.style.color = '#2c2c2c';
+                }
+                
+                // 태그들 개별 애니메이션
+                tags.forEach((tag, index) => {
+                    setTimeout(() => {
+                        tag.style.background = '#f0f0f0';
+                        tag.style.color = '#2c2c2c';
+                        tag.style.transform = 'translateY(-1px)';
+                    }, index * 50);
+                });
+            });
+
+            item.addEventListener('mouseleave', function() {
+                const image = this.querySelector('.portfolio-image');
+                const content = this.querySelector('.portfolio-content');
+                const title = this.querySelector('h3');
+                const tags = this.querySelectorAll('.portfolio-tag');
+                
+                // 비디오가 있으면 일시정지
+                if (video) {
+                    video.pause();
+                }
+                
+                // 원래 상태로 복구
+                if (image) {
+                    image.style.transform = 'scale(1)';
+                }
+                
+                if (content) {
+                    content.style.transform = 'translateY(0)';
+                }
+                
+                if (title) {
+                    title.style.color = '#2c2c2c';
+                }
+                
+                tags.forEach(tag => {
+                    tag.style.background = '#f8f8f8';
+                    tag.style.color = '#666';
+                    tag.style.transform = 'translateY(0)';
+                });
+            });
+        });
+
+        // 메인 타이틀 한 글자씩 애니메이션
+        function animateTitle() {
+            const title = document.getElementById('main-title');
+            const text = title.textContent;
+            title.innerHTML = '';
+            
+            [...text].forEach((char, index) => {
+                const span = document.createElement('span');
+                span.textContent = char === ' ' ? '\u00A0' : char;
+                span.classList.add('char');
+                span.style.animationDelay = `${index * 0.1}s`;
+                title.appendChild(span);
+            });
+        }
+
+        // 로고 클릭시 페이지 맨 위로
+        document.querySelector('.logo').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // 스킬 태그 클릭 피드백
+        document.querySelectorAll('.skill-tag').forEach(tag => {
+            tag.addEventListener('click', function() {
+                this.style.animation = 'skillPulse 0.3s ease';
+                setTimeout(() => {
+                    this.style.animation = '';
+                }, 300);
+            });
+        });
+
+        // 키보드 네비게이션
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowDown' || e.key === ' ') {
+                e.preventDefault();
+                window.scrollBy({
+                    top: window.innerHeight * 0.8,
+                    behavior: 'smooth'
+                });
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                window.scrollBy({
+                    top: -window.innerHeight * 0.8,
+                    behavior: 'smooth'
+                });
+            }
+        });
+
+        // 더블클릭으로 다크모드 토글 (이스터 에그)
+        let clickCount = 0;
+        document.addEventListener('click', function() {
+            clickCount++;
+            if (clickCount === 1) {
+                setTimeout(() => {
+                    clickCount = 0;
+                }, 300);
+            } else if (clickCount === 2) {
+                document.body.style.filter = document.body.style.filter === 'invert(1)' ? 'invert(0)' : 'invert(1)';
+                clickCount = 0;
+            }
+        });
+
+        // 페이지 로드 후 타이틀 애니메이션 시작
+        window.addEventListener('load', function() {
+            setTimeout(animateTitle, 500);
+        });
+
+        // 트레일 위치 업데이트
+        function updateTrails() {
+            trails.forEach(trail => {
+                trail.element.style.left = trail.x + 'px';
+                trail.element.style.top = trail.y + 'px';
+            });
+            requestAnimationFrame(updateTrails);
+        }
+
+        // 트레일 초기화 시 업데이트 함수 시작
+        if (trails.length > 0) {
+            updateTrails();
+        }
+    </script>
+</body>
+</html>
