@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UX/UI 포트폴리오 갤러리</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+            background: #ff9a66;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .gallery-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            perspective: 1200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .carousel {
+            position: relative;
+            width: 330px;
+            height: 330px;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+        
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(255, 136, 76, 0.6);
+            transition: all 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+            cursor: pointer;
+            border: 1px solid rgba(255, 139, 81, 0.695);
+        }
+        
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            border-radius: 8px;
+            transition: all 0.6s ease;
+            background: #0a0a0a;
+        }
+        
+        .slide.active img {
+            transform: scale(1.02);
+        }
+        
+        .slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0.02) 100%);
+            border-radius: 8px;
+            z-index: 1;
+        }
+        
+        .slide.active {
+            z-index: 10;
+            box-shadow: 0 12px 48px rgba(225, 100, 38, 0.4);
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+        
+        .navigation {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 32px;
+            z-index: 20;
+        }
+        
+        .nav-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.7);
+            width: 44px;
+            height: 44px;
+            border-radius: 2px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 300;
+            line-height: 1;
+            transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            backdrop-filter: blur(20px);
+        }
+        
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.9);
+            transform: translateY(-1px);
+        }
+        
+        .nav-btn:active {
+            transform: translateY(0);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .indicators {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 16px;
+            z-index: 20;
+        }
+        
+        .indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+        
+        .indicator.active {
+            background: rgba(255, 255, 255, 0.8);
+            transform: scale(1.4);
+        }
+        
+        .indicator:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(1.2);
+        }
+        
+        .title {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.5rem;
+            font-weight: 200;
+            text-align: center;
+            z-index: 20;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+        }
+        
+        .progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.6);
+            transition: width 0.1s linear;
+            z-index: 30;
+        }
+    </style>
+</head>
+<body>
+    <div class="gallery-container">
+        <div class="progress-bar" id="progressBar"></div>
+        
+        <h1 class="title">UX/UI Portfolio</h1>
+        
+        <div class="carousel" id="carousel">
+            <!-- 슬라이드들이 여기에 동적으로 생성됩니다 -->
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-btn" id="prevBtn">‹</button>
+            <button class="nav-btn" id="nextBtn">›</button>
+        </div>
+        
+        <div class="indicators" id="indicators">
+            <!-- 인디케이터들이 여기에 동적으로 생성됩니다 -->
+        </div>
+    </div>
+
+    <script>
+        class Portfolio3DGallery {
+            constructor() {
+                this.currentSlide = 0;
+                this.totalSlides = 10;
+                this.autoPlayInterval = null;
+                this.autoPlayDuration = 2500; // 2.5초
+                this.isAutoPlaying = true;
+                
+                // 플레이스홀더 이미지 URLs (실제 포트폴리오 이미지로 교체하세요)
+                this.images = [
+                    '1-1.png',
+                    '2-1.png', 
+                    '3-1.png',
+                    '4-1.png',
+                    '5-1.png',
+                    '6-1.png',
+                    '7-1.png',
+                    '8-1.png',
+                    '9-1.png',
+                    '10-1.png'
+                ];
+                
+                this.init();
+            }
+            
+            init() {
+                this.createSlides();
+                this.createIndicators();
+                this.bindEvents();
+                this.startAutoPlay();
+                this.updateDisplay();
+            }
+            
+            createSlides() {
+                const carousel = document.getElementById('carousel');
+                
+                this.images.forEach((src, index) => {
+                    const slide = document.createElement('div');
+                    slide.className = 'slide';
+                    
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.alt = `Portfolio ${index + 1}`;
+                    img.loading = 'lazy';
+                    
+                    // 이미지 로드 완료 후 부드러운 페이드인
+                    img.onload = () => {
+                        img.style.opacity = '1';
+                    };
+                    img.style.opacity = '0';
+                    img.style.transition = 'opacity 0.5s ease';
+                    
+                    slide.appendChild(img);
+                    carousel.appendChild(slide);
+                });
+            }
+            
+            createIndicators() {
+                const indicatorsContainer = document.getElementById('indicators');
+                
+                for (let i = 0; i < this.totalSlides; i++) {
+                    const indicator = document.createElement('div');
+                    indicator.className = 'indicator';
+                    indicator.addEventListener('click', () => this.goToSlide(i));
+                    indicatorsContainer.appendChild(indicator);
+                }
+            }
+            
+            bindEvents() {
+                document.getElementById('prevBtn').addEventListener('click', () => this.prevSlide());
+                document.getElementById('nextBtn').addEventListener('click', () => this.nextSlide());
+                
+                // 키보드 네비게이션
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowLeft') this.prevSlide();
+                    if (e.key === 'ArrowRight') this.nextSlide();
+                    if (e.key === ' ') {
+                        e.preventDefault();
+                        this.toggleAutoPlay();
+                    }
+                });
+                
+                // 마우스 호버시 자동 재생 일시 정지
+                const carousel = document.getElementById('carousel');
+                carousel.addEventListener('mouseenter', () => this.pauseAutoPlay());
+                carousel.addEventListener('mouseleave', () => {
+                    if (this.isAutoPlaying) this.startAutoPlay();
+                });
+            }
+            
+            updateDisplay() {
+                const carousel = document.getElementById('carousel');
+                const slides = carousel.querySelectorAll('.slide');
+                const indicators = document.querySelectorAll('.indicator');
+                
+                // 캐러셀 회전
+                const rotateY = this.currentSlide * -(360 / this.totalSlides);
+                carousel.style.transform = `rotateY(${rotateY}deg)`;
+                
+                // 슬라이드 위치 설정
+                slides.forEach((slide, index) => {
+                    const angle = (360 / this.totalSlides) * index;
+                    const radius = 380; // 컨테이너 크기에 맞게 조정
+                    
+                    // 현재 슬라이드와의 거리에 따른 투명도 조절
+                    const distance = Math.min(
+                        Math.abs(index - this.currentSlide),
+                        this.totalSlides - Math.abs(index - this.currentSlide)
+                    );
+                    
+                    if (index === this.currentSlide) {
+                        slide.style.transform = `
+                            rotateY(${angle}deg) 
+                            translateZ(${radius + 50}px)
+                            scale(1.05)
+                        `;
+                        slide.style.opacity = '1';
+                        slide.style.zIndex = '10';
+                        slide.classList.add('active');
+                    } else if (distance === 1) {
+                        slide.style.transform = `
+                            rotateY(${angle}deg) 
+                            translateZ(${radius - 30}px)
+                            scale(0.75)
+                        `;
+                        slide.style.opacity = '0.6';
+                        slide.style.zIndex = '5';
+                        slide.classList.remove('active');
+                    } else {
+                        slide.style.transform = `
+                            rotateY(${angle}deg) 
+                            translateZ(${radius - 50}px)
+                            scale(0.75)
+                        `;
+                        slide.style.opacity = '0.2';
+                        slide.style.zIndex = '1';
+                        slide.classList.remove('active');
+                    }
+                });
+                
+                // 인디케이터 업데이트
+                indicators.forEach((indicator, index) => {
+                    if (index === this.currentSlide) {
+                        indicator.classList.add('active');
+                    } else {
+                        indicator.classList.remove('active');
+                    }
+                });
+            }
+            
+            nextSlide() {
+                this.currentSlide = (this.currentSlide + 1) % this.totalSlides;
+                this.updateDisplay();
+                this.resetAutoPlay();
+            }
+            
+            prevSlide() {
+                this.currentSlide = (this.currentSlide - 1 + this.totalSlides) % this.totalSlides;
+                this.updateDisplay();
+                this.resetAutoPlay();
+            }
+            
+            goToSlide(index) {
+                this.currentSlide = index;
+                this.updateDisplay();
+                this.resetAutoPlay();
+            }
+            
+            startAutoPlay() {
+                this.stopAutoPlay();
+                let progress = 0;
+                const progressBar = document.getElementById('progressBar');
+                
+                const updateProgress = () => {
+                    progress += 20;
+                    progressBar.style.width = `${(progress / this.autoPlayDuration) * 100}%`;
+                    
+                    if (progress >= this.autoPlayDuration) {
+                        this.nextSlide();
+                        progress = 0;
+                    }
+                };
+                
+                this.autoPlayInterval = setInterval(updateProgress, 20);
+            }
+            
+            stopAutoPlay() {
+                if (this.autoPlayInterval) {
+                    clearInterval(this.autoPlayInterval);
+                    this.autoPlayInterval = null;
+                }
+                document.getElementById('progressBar').style.width = '0%';
+            }
+            
+            pauseAutoPlay() {
+                this.stopAutoPlay();
+            }
+            
+            resetAutoPlay() {
+                if (this.isAutoPlaying) {
+                    this.startAutoPlay();
+                }
+            }
+            
+            toggleAutoPlay() {
+                this.isAutoPlaying = !this.isAutoPlaying;
+                if (this.isAutoPlaying) {
+                    this.startAutoPlay();
+                } else {
+                    this.stopAutoPlay();
+                }
+            }
+        }
+        
+        // 페이지 로드 시 갤러리 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            new Portfolio3DGallery();
+        });
+    </script>
+</body>
+</html>
